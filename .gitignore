@@ -1,0 +1,12 @@
+env/
+__pycache__
+pur_beurre/__pycache__
+food/__pycache__
+food/migrations/__pycache__
+food/management/__pycache__
+food/management/commands/__pycache__
+.pytest_cache/
+pur_beurre/.coverage
+pur_beurre/food/migrations/
+*.pyc
+pur_beurre/settings/production.py
