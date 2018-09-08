@@ -7,8 +7,6 @@ from django.views.generic import TemplateView
 from django.contrib.auth.views import (
     LoginView,
     LogoutView,
-    # PasswordChangeView,
-    # PasswordChangeDoneView,
     PasswordResetView,
     PasswordResetDoneView,
     PasswordResetConfirmView,
@@ -32,10 +30,6 @@ urlpatterns = [
         template_name='food/account/signin.html'), name='signin'),
     path('account/signout/', LogoutView.as_view(template_name='food/home.html'), name='signout'),
     #### Password reset
-    # path('account/password_change/', PasswordChangeView.as_view(
-    #     template_name='food/account/password_change.html'), name='password_change'),
-    # path('account/password_change/done/', PasswordChangeDoneView.as_view(
-    #     template_name='food/account/password_change_done.html'), name='password_change_done'),
     path('account/password_reset/', PasswordResetView.as_view(
         template_name='food/account/password_reset.html'), name='password_reset'),
     path('account/password_reset_done/', PasswordResetDoneView.as_view(
