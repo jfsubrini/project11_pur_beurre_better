@@ -31,18 +31,21 @@ urlpatterns = [
     path('account/signout/', LogoutView.as_view(template_name='food/home.html'), name='signout'),
     #### Password reset
     path('account/password_reset/', PasswordResetView.as_view(
-        template_name='food/account/password_reset.html', \
-        email_template_name='food/account/password_reset_email.html', \
-        subject_template_name='food/account/password_reset_subject.txt'), name='password_reset'),
+        template_name='food/account/password_reset.html',
+        email_template_name='food/account/password_reset_email.html',
+        subject_template_name='food/account/password_reset_subject.txt'), name='password_reset'
+        ),
     path('account/password_reset_done/', PasswordResetDoneView.as_view(
-        template_name='food/account/password_reset_done.html'), name='password_reset_done'),
+        template_name='food/account/password_reset_done.html'), name='password_reset_done'
+        ),
     re_path(
-        r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', \
+        r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         PasswordResetConfirmView.as_view(
-            template_name='food/account/password_reset_confirm.html'), \
-            name='password_reset_confirm'),
+            template_name='food/account/password_reset_confirm.html'), name='password_reset_confirm'
+        ),
     path('reset/done/', PasswordResetCompleteView.as_view(
-        template_name='food/account/password_reset_complete.html'), name='password_reset_complete'),
+        template_name='food/account/password_reset_complete.html'), name='password_reset_complete'
+        ),
     #### Results and information pages
     path('foodresult/', views.foodresult, name='foodresult'),
     path('foodinfo/<int:pk>/', views.FoodInfo.as_view(), name='foodinfo'),
