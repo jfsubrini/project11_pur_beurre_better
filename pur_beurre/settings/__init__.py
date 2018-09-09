@@ -136,7 +136,7 @@ STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
 LOGIN_REDIRECT_URL = '/account/'
 
 
-# Email confirmation for password reset
+# Email confirmation for password reset during development only
 # Console backend
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # File backend
