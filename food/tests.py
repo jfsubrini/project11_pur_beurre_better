@@ -433,72 +433,64 @@ class SelectionTestCase(TestCase):
 #                   FOOD RESULTS BY CATEGORY                   #
 ################################################################
 
-# class CategoriesTestCase(TestCase):
-#     """
-#     Testing the Food Categories page.
-#     """
+class CategoriesTestCase(TestCase):
+    """
+    Testing the Food Categories page.
+    """
 
-#     def setUp(self):
-#         """Data samples to run the tests.
-#         """
-#         self.username = 'jeanfrancois'
-#         self.email = 'jfsubrini@yahoo.com'
-#         self.password = 'monsupermotdepasse'
-#         self.user = User.objects.create_user(self.username, self.email, self.password)
+    def setUp(self):
+        """Data samples to run the tests.
+        """
+        self.username = 'jeanfrancois'
+        self.email = 'jfsubrini@yahoo.com'
+        self.password = 'monsupermotdepasse'
+        self.user = User.objects.create_user(self.username, self.email, self.password)
 
-#         # Sample of origin (Nutella) and substitute (Gerblé) foods data in a category.
-#         self.category = Category.objects.create(name="Pâtes à tartiner")
-#         gerble = {
-#             'id': '3178',
-#             'name': 'Pâte à tartiner - Gerblé - 220g',
-#             'brand': 'Gerblé, Glucoregul',
-#             'category': self.category,
-#             'nutrition_grade': NutritionGrade.a,
-#             'nutrition_score': -4,
-#             'url': 'https://fr.openfoodfacts.org/produit/3175681105393/pate-a-tartiner-gerble',
-#             'image_food': 'https://blabla',
-#             'image_nutrition': 'https://blablabla',
-#         }
-#         gerble = Food.objects.create(**gerble)
-#         self.gerble = gerble
+        # Sample of origin (Nutella) and substitute (Gerblé) foods data in a category.
+        self.category = Category.objects.create(name="Pâtes à tartiner")
+        gerble = {
+            'id': '3178',
+            'name': 'Pâte à tartiner - Gerblé - 220g',
+            'brand': 'Gerblé, Glucoregul',
+            'category': self.category,
+            'nutrition_grade': NutritionGrade.a,
+            'nutrition_score': -4,
+            'url': 'https://fr.openfoodfacts.org/produit/3175681105393/pate-a-tartiner-gerble',
+            'image_food': 'https://blabla',
+            'image_nutrition': 'https://blablabla',
+        }
+        gerble = Food.objects.create(**gerble)
+        self.gerble = gerble
 
-#     def test_display_per_category_logged_in(self):
-#         """Accessing the food results per category page while logged in
-#         that renders HTTP 200 and the right template.
-#         """
-#         # The user is logged in.
-#         self.client.login(username=self.username, password=self.password)
-#         # Testing the access while logged in.
-#         response = self.client.get(reverse('categories'))
-#         self.assertEqual(response.status_code, 200)
-#         self.assertTemplateUsed(response, 'food/foodcategories.html')
+    def test_display_per_category_logged_out(self):
+        """Trying to access the foodcategories page while logged out that renders
+        HTTP 302, redirection to the user signin page.
+        """
+        response = self.client.get(reverse('categories'))
+        self.assertRedirects(
+            response, (reverse('signin'))+'?redirection_vers='+(reverse('categories')))
 
-#     def test_display_per_category_logged_out(self):
-#         """Trying to access the foodcategories page while logged out that renders
-#         HTTP 302, redirection to the user signin page.
-#         """
-#         response = self.client.get(reverse('account'))
-#         self.assertRedirects(
-#             response, (reverse('signin'))+'?redirection_vers='+(reverse('signin')))
+    def test_display_per_category_valid(self):
+        """Accessing the foodcategories page while the user category choice is valid.
+        This must return HTTP 200 and the right template.
+        """
+        # The user is logged in.
+        self.client.login(username=self.username, password=self.password)
+        # The user selects an option (one category).
+        response = self.client.get(reverse('categories'), {'category': 'Pâtes à tartiner'})
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'food/foodcategories.html')
 
-#     def test_display_per_category_valid(self):
-#         """Accessing the foodcategories page while the user category choice is valid.
-#         This must return HTTP 200 and the right template.
-#         """
-#         response = self.client.get(reverse('categories'), {'category': 'Pâtes à tartiner'})
-#         self.assertEqual(response.status_code, 200)
-#         self.assertTemplateUsed(response, 'food/foodcategories.html')
-
-#     def test_display_per_category_save(self):
-#         """Saving a substitute food into MySelection table while the user
-#         is logged in and return HTTP 302."""
-#         # The user is logged in.
-#         self.client.login(username=self.username, password=self.password)
-#         # Testing the saving of the Gerblé food by the user.
-#         url = reverse('categories')
-#         data = {"substitute": self.gerble.id}
-#         response = self.client.post(url, data)
-#         # Redirect to the same Selection page.
-#         self.assertEqual(response.status_code, 302)
-#         # The substitute food must be saved into MySelection table for that user.
-#         self.assertTrue(MySelection.objects.all().exists())
+    def test_display_per_category_save(self):
+        """Saving a substitute food into MySelection table while the user
+        is logged in and return HTTP 302."""
+        # The user is logged in.
+        self.client.login(username=self.username, password=self.password)
+        # Testing the saving of the Gerblé food by the user.
+        url = reverse('categories')
+        data = {"substitute": self.gerble.id}
+        response = self.client.post(url, data)
+        # Redirect to the same Selection page.
+        self.assertEqual(response.status_code, 302)
+        # The substitute food must be saved into MySelection table for that user.
+        self.assertTrue(MySelection.objects.all().exists())
