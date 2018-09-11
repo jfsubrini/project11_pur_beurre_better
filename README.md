@@ -1,6 +1,6 @@
 # project11_pur_beurre_better
 
-Program developed and deployed by Jean-François Subrini, July 2018.
+Program developed and deployed by Jean-François Subrini, September 2018.
 
 
 
@@ -11,8 +11,8 @@ Program developed and deployed by Jean-François Subrini, July 2018.
 * The user enters the name and the brand of the food to substitute. The website find a list of substitute foods from the same category and with a better [nutriscore](https://fr.openfoodfacts.org/score-nutritionnel-france).
 * Cliking on each substitute food the user can have more information about it.
 * If registered and signed in, the user can save the healthy products found in the substitute list and then consult his selection. Each selected food can also be deleted.
-* In this version of the website, the user can also select one food *category* and get as a response substitute healthy foods with a *A or B nutriscore*.
-* In this version of the website, the user can also *change his/her password*.
+* *In this version of the website*, the user can also select one food *category*, out of 20, and get as a response substitute healthy foods with a *A or B nutriscore*.
+* *In this version of the website*, the user can also *reset his/her password*.
 
 
 ## How to use it or get it running ?
@@ -21,7 +21,7 @@ Program developed and deployed by Jean-François Subrini, July 2018.
 
 * You can access the program from your Terminal executing *./manage.py runserver* and watching it from your *localhost:8000* in your favorite browser.
 
-* You can also and more easily go directly online at the **IP address of the DigitalOcean server : to be completed...**. On this site, **the database is updated every week**. A cron job is running at midnight on Sunday morning.
+* You can also and more easily go directly online at [Pur Beurre](https://purbeurre-better.herokuapp.com/) website, deployed with *Heroku*.
 
 
 ## How to update the category list and food data if running this app with localhost ?
