@@ -141,7 +141,7 @@ LOGIN_REDIRECT_URL = '/account/'
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Email confirmation for password reset in production
-DEFAULT_FROM_EMAIL=os.environ.get('DEFAULT_FROM_EMAIL')
+DEFAULT_FROM_EMAIL=os.environ.get('EMAIL_USER')
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.zoho.com'
