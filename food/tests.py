@@ -494,3 +494,33 @@ class CategoriesTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
         # The substitute food must be saved into MySelection table for that user.
         self.assertTrue(MySelection.objects.all().exists())
+
+
+
+################################################################
+#                        PASSWORD RESET                        #
+################################################################
+
+class ResetTestCase(TestCase):
+    """
+    Testing the Password Reset pages.
+    """
+
+    def setUp(self):
+        """Data samples to run the tests.
+        """
+        self.username = 'jeanfrancois'
+        self.email = 'jfsubrini@yahoo.com'
+        self.password = 'monsupermotdepasse'
+        self.user = User.objects.create_user(self.username, self.email, self.password)
+
+    # def test_account_logged_in(self):
+    #     """Accessing the user account page while logged in
+    #     that renders HTTP 200 and the right template.
+    #     """
+    #     # The user is logged in.
+    #     self.client.login(username=self.username, password=self.password)
+    #     # Testing the access while logged in.
+    #     response = self.client.get(reverse('account'))
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertTemplateUsed(response, 'food/account/account.html')
