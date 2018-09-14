@@ -5,7 +5,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
-
+# from django.contrib.auth.tokens import default_token_generator, PasswordResetTokenGenerator ###
 
 # Imports from my app
 from .models import NutritionGrade, Category, Food, MySelection
@@ -117,7 +117,6 @@ class RegisterTestCase(TestCase):
         self.username = 'jeanfrancois'
         self.email = 'jfsubrini@yahoo.com'
         self.password = 'monsupermotdepasse'
-        # self.user = User.objects.create_user(self.username, self.email, self.password)
 
     def test_register_page(self):
         """Connexion to the Register page that must return HTTP 200 and the right template.
@@ -127,7 +126,7 @@ class RegisterTestCase(TestCase):
         self.assertTemplateUsed(response, 'food/account/register.html')
 
     def test_register_valid(self):
-        """Post a valid form from the Register page that must return
+        """Posting a valid form from the Register page that must return
         the account page (HTTP 302 url redirection).
         The user must be registered into the database.
         """
@@ -142,7 +141,7 @@ class RegisterTestCase(TestCase):
                 username=self.username, email=self.email).exists())
 
     def test_register_invalid(self):
-        """Post an invalid form from the Sign In page that must return
+        """Posting an invalid form from the Sign In page that must return
         HTTP 200 and stay in the same page with the right template.
         The user mustn't be registred into the database.
         """
@@ -183,7 +182,7 @@ class SignInTestCase(TestCase):
         self.assertTemplateUsed(response, 'food/account/signin.html')
 
     def test_signin_valid(self):
-        """Post a valid form from the Sign In page that must return
+        """Posting a valid form from the Sign In page that must return
         the account page (HTTP 302 url redirection).
         """
         response = self.client.post(reverse('signin'), {
@@ -193,7 +192,7 @@ class SignInTestCase(TestCase):
         self.assertRedirects(response, '/account/')
 
     def test_signin_invalid(self):
-        """Post an invalid form from the Sign In page that must return
+        """Posting an invalid form from the Sign In page that must return
         HTTP 200 and stay in the same page with the right template.
         """
         response = self.client.post(reverse('signin'), {
@@ -494,3 +493,115 @@ class CategoriesTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
         # The substitute food must be saved into MySelection table for that user.
         self.assertTrue(MySelection.objects.all().exists())
+
+
+
+################################################################
+#                        PASSWORD RESET                        #
+################################################################
+
+class PasswordResetTestCase(TestCase):
+    """
+    Testing the Password Reset pages.
+    """
+
+    def setUp(self):
+        """Data samples to run the tests.
+        """
+        self.username = 'jeanfrancois'
+        self.email = 'jfsubrini@yahoo.com'
+        self.password = 'monsupermotdepasse'
+        self.new_password1 = 'monsupernouveaumotdepasse'
+        self.new_password2 = 'monsupernouveaumotdepasse'
+        self.user = User.objects.create_user(self.username, self.email, self.password)
+
+    def test_password_reset_page(self):
+        """Connexion to the Password Reset page that must return HTTP 200 and the right template.
+        """
+        response = self.client.get(reverse('password_reset'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'food/account/password_reset.html')
+
+    def test_password_reset_sending_email(self):
+        """Posting a valid email (present into the database) from the Password Reset page
+        that must send the confirmation email to the user.
+        """
+        response = self.client.post(reverse('password_reset'), {
+            'email': self.email
+        })
+        self.assertRedirects(response, '/account/password_reset_done/')
+        self.assertTemplateUsed(response, 'food/account/password_reset_email.html', \
+            'food/account/password_reset_subject.txt')
+
+    def test_password_reset_not_sending_email(self):
+        """Posting an invalid email (not present into the database) from the Password Reset page
+        that mustn't send the confirmation email to the user.
+        """
+        response = self.client.post(reverse('password_reset'), {
+            'email': 'not_a_valid_email'
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'food/account/password_reset.html')
+
+    def test_password_reset_done(self):
+        """Display of the Password Reset Done page that comes after sending the user email.
+        """
+        response = self.client.get(reverse('password_reset_done'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'food/account/password_reset_done.html')
+
+    def test_password_reset_confirm(self):
+        """Connexion to the Password Reset Confirm page that must return HTTP 200
+        and the right template if the token has been sent (in the url).
+        """
+        uidb64 = 'NjA'
+        token = '4zk-4cf11a9b549aa608ff27'
+        response = self.client.get(reverse('password_reset_confirm', args=(uidb64, token,)))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'food/account/password_reset_confirm.html')
+
+##############################################################################################
+    # def test_password_reset_confirm_valid(self):
+    #     """Posting a valid new password (with confirmation of that new password)
+    #     from the Password Reset Confirm page that must update the password into
+    #     the database.
+    #     """
+    #     uidb64 = 'NjA'
+    #     token = PasswordResetTokenGenerator.make_token(user)
+    #     # Testing the saving of the updated password into the database.
+    #     url = reverse('password_reset_confirm', args=(uidb64, token,))
+    #     data = {
+    #         'username': self.username,
+    #         'email': self.email,
+    #         'password': self.new_password1
+    #     }
+    #     response = self.client.post(url, data)
+    #     self.assertEqual(response.status_code, 200)
+    #     # The new password must be saved into the User table for that user.
+    #     self.assertTrue(
+    #         User.objects.filter(
+    #             username=self.username, email=self.email, password=self.new_password1).exists())
+    #     # self.assertRedirects(response, '/account/password_reset_complete/')
+
+    # def test_password_reset_confirm_invalid(self):
+    #     """Posting an invalid new password (invalid spelling or new password different from
+    #     the one entered as a confirmation new password) from the Password Reset Confirm page
+    #     that must render the same page and not update the database.
+    #     """
+    #     response = self.client.post('http://localhost:8000/reset/NjA/set-password/', {
+    #         'new_password1': self.new_password1,
+    #         'new_password2': 'wrongnewpassword'
+    #     })
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertTemplateUsed(response, 'food/account/password_reset_confirm.html')
+    #     self.assertFalse(
+    #         User.objects.filter(
+    #             username=self.username, email=self.email, password=self.new_password1).exists())
+##############################################################################################
+
+    def test_password_reset_complete(self):
+        """Display of the Password Reset Complete page that comes after sending the new password.
+        """
+        response = self.client.get(reverse('password_reset_complete'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'food/account/password_reset_complete.html')
