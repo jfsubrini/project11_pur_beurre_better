@@ -2,10 +2,10 @@
 
 
 # Django imports
+from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
-# from django.contrib.auth.tokens import default_token_generator, PasswordResetTokenGenerator ###
 
 # Imports from my app
 from .models import NutritionGrade, Category, Food, MySelection
@@ -516,15 +516,17 @@ class PasswordResetTestCase(TestCase):
         self.user = User.objects.create_user(self.username, self.email, self.password)
 
     def test_password_reset_page(self):
-        """Connexion to the Password Reset page that must return HTTP 200 and the right template.
+        """Connexion to the Password Reset page that must return HTTP 200 and
+        the right template that shows the email form.
         """
         response = self.client.get(reverse('password_reset'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'food/account/password_reset.html')
 
-    def test_password_reset_sending_email(self):
+    def test_password_reset_sending_email_ok(self):
         """Posting a valid email (present into the database) from the Password Reset page
-        that must send the confirmation email to the user.
+        that must send the confirmation email to the user and redirect to the
+        Password Rest Done page.
         """
         response = self.client.post(reverse('password_reset'), {
             'email': self.email
@@ -532,6 +534,11 @@ class PasswordResetTestCase(TestCase):
         self.assertRedirects(response, '/account/password_reset_done/')
         self.assertTemplateUsed(response, 'food/account/password_reset_email.html', \
             'food/account/password_reset_subject.txt')
+        # Django sends an email to the user and we can check if the content
+        # of the subject is conform.
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, \
+            'Réinitialisation du mot de passe sur le site web Pur Beurre')
 
     def test_password_reset_not_sending_email(self):
         """Posting an invalid email (not present into the database) from the Password Reset page
@@ -560,44 +567,52 @@ class PasswordResetTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'food/account/password_reset_confirm.html')
 
-##############################################################################################
-    # def test_password_reset_confirm_valid(self):
-    #     """Posting a valid new password (with confirmation of that new password)
-    #     from the Password Reset Confirm page that must update the password into
-    #     the database.
-    #     """
-    #     uidb64 = 'NjA'
-    #     token = PasswordResetTokenGenerator.make_token(user)
-    #     # Testing the saving of the updated password into the database.
-    #     url = reverse('password_reset_confirm', args=(uidb64, token,))
-    #     data = {
-    #         'username': self.username,
-    #         'email': self.email,
-    #         'password': self.new_password1
-    #     }
-    #     response = self.client.post(url, data)
-    #     self.assertEqual(response.status_code, 200)
-    #     # The new password must be saved into the User table for that user.
-    #     self.assertTrue(
-    #         User.objects.filter(
-    #             username=self.username, email=self.email, password=self.new_password1).exists())
-    #     # self.assertRedirects(response, '/account/password_reset_complete/')
+    def test_password_reset_confirm_valid(self):
+        """Posting a valid new password (with confirmation of that new password)
+        from the Password Reset Confirm page that must update the password into
+        the database.
+        """
+        response = self.client.post(reverse('password_reset'), {
+            'email': self.email
+        })
+        # Now we get the token and userid from the response.
+        token = response.context[0]['token']
+        uid = response.context[0]['uid']
+        # Now we can use the token to get the password change form.
+        response = self.client.get(reverse('password_reset_confirm', \
+            kwargs={'token':token, 'uidb64':uid}))
+        # Now we post to the same url with the new password.
+        response = self.client.post(reverse('password_reset_confirm', \
+            kwargs={'token':token, 'uidb64':uid}), \
+        {'new_password1':self.new_password1, 'new_password2':self.new_password2})
+        # And now there is a redirection to the Password Rest Complete page.
+        self.assertRedirects(response, '/account/password_reset_complete/')
+        # And we can check that the new password is present now in the database.
+        self.assertTrue(
+            User.objects.filter(
+                email=self.email, password=self.new_password1).exists())
 
     # def test_password_reset_confirm_invalid(self):
-    #     """Posting an invalid new password (invalid spelling or new password different from
+    #     """Posting an invalid new password (invalid syntax or new password different from
     #     the one entered as a confirmation new password) from the Password Reset Confirm page
     #     that must render the same page and not update the database.
     #     """
-    #     response = self.client.post('http://localhost:8000/reset/NjA/set-password/', {
-    #         'new_password1': self.new_password1,
-    #         'new_password2': 'wrongnewpassword'
-    #     })
+        # response = self.client.post(reverse('password_reset'), {
+        #     'email': self.email
+        # })
+        # token = response.context[0]['token']
+        # uid = response.context[0]['uid']
+        # response = self.client.get(reverse('password_reset_confirm', \
+        #     kwargs={'token':token, 'uidb64':uid}))
+        # # Now we post to the same url with the new password.
+        # response = self.client.post(reverse('password_reset_confirm', \
+        #     kwargs={'token':token, 'uidb64':uid}), \
+        # {'new_password1':self.new_password1, 'new_password2':'different_new_password'})
     #     self.assertEqual(response.status_code, 200)
     #     self.assertTemplateUsed(response, 'food/account/password_reset_confirm.html')
     #     self.assertFalse(
     #         User.objects.filter(
     #             username=self.username, email=self.email, password=self.new_password1).exists())
-##############################################################################################
 
     def test_password_reset_complete(self):
         """Display of the Password Reset Complete page that comes after sending the new password.
