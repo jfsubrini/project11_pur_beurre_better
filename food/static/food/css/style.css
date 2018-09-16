@@ -109,7 +109,7 @@
 
 /* Frame for reset done message to be displayed */
 .reset_done {
-	background-color: rgba(0, 0, 0, .75);
+	background-color: rgba(52, 90, 97, .75); /* Equivalent to #345A61 */
 	border: 2px solid #345A61;
 	-moz-border-radius: 5%;
     -webkit-border-radius: 5%;
@@ -118,8 +118,11 @@
 }
 
 /* Anchor from the sign in page to the password reset page */
+.reset {
+	text-decoration: underline;
+}
+
 .reset a {
-	text-decoration: none;
 	color: white;
 }
 .reset a:hover {
