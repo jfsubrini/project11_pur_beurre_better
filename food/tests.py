@@ -569,50 +569,46 @@ class PasswordResetTestCase(TestCase):
 
     def test_password_reset_confirm_valid(self):
         """Posting a valid new password (with confirmation of that new password)
-        from the Password Reset Confirm page that must update the password into
-        the database.
+        from the Password Reset Confirm page that must update the password and send the
+        Password Rest Complete page and the end of the process.
         """
+        # First, filling up the password reset form to generate the confirmation token.
         response = self.client.post(reverse('password_reset'), {
             'email': self.email
         })
-        # Now we get the token and userid from the response.
+        # Getting the token and userid from the response.
         token = response.context[0]['token']
         uid = response.context[0]['uid']
-        # Now we can use the token to get the password change form.
+        # Now we can use the token to get the new password form (password reset confirm).
         response = self.client.get(reverse('password_reset_confirm', \
-            kwargs={'token':token, 'uidb64':uid}))
+            kwargs={'token':token, 'uidb64':uid}))   # example : url="/reset/MTE/set-password/"
         # Now we post to the same url with the new password.
-        response = self.client.post(reverse('password_reset_confirm', \
-            kwargs={'token':token, 'uidb64':uid}), \
-        {'new_password1':self.new_password1, 'new_password2':self.new_password2})
-        # And now there is a redirection to the Password Rest Complete page.
-        self.assertRedirects(response, '/account/password_reset_complete/')
-        # And we can check that the new password is present now in the database.
-        self.assertTrue(
-            User.objects.filter(
-                email=self.email, password=self.new_password1).exists())
+        response = self.client.post(response['Location'], \
+            {'new_password1':self.new_password1, 'new_password2':self.new_password2})
+        # And now there is a redirection to the Password Rest Complete page (/reset/done/).
+        self.assertRedirects(response, reverse('password_reset_complete'))
 
-    # def test_password_reset_confirm_invalid(self):
-    #     """Posting an invalid new password (invalid syntax or new password different from
-    #     the one entered as a confirmation new password) from the Password Reset Confirm page
-    #     that must render the same page and not update the database.
-    #     """
-        # response = self.client.post(reverse('password_reset'), {
-        #     'email': self.email
-        # })
-        # token = response.context[0]['token']
-        # uid = response.context[0]['uid']
-        # response = self.client.get(reverse('password_reset_confirm', \
-        #     kwargs={'token':token, 'uidb64':uid}))
-        # # Now we post to the same url with the new password.
-        # response = self.client.post(reverse('password_reset_confirm', \
-        #     kwargs={'token':token, 'uidb64':uid}), \
-        # {'new_password1':self.new_password1, 'new_password2':'different_new_password'})
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertTemplateUsed(response, 'food/account/password_reset_confirm.html')
-    #     self.assertFalse(
-    #         User.objects.filter(
-    #             username=self.username, email=self.email, password=self.new_password1).exists())
+    def test_password_reset_confirm_invalid(self):
+        """Posting an invalid new password (invalid syntax or new password different from
+        the one entered as a confirmation new password) from the Password Reset Confirm page
+        that must render the same page and not update the password.
+        """
+        # First, filling up the password reset form to generate the confirmation token.
+        response = self.client.post(reverse('password_reset'), {
+            'email': self.email
+        })
+        # Getting the token and userid from the response.
+        token = response.context[0]['token']
+        uid = response.context[0]['uid']
+        # Now we can use the token to get the new password form (password reset confirm).
+        response = self.client.get(reverse('password_reset_confirm', \
+            kwargs={'token':token, 'uidb64':uid}))   # example : url="/reset/MTE/set-password/"
+        # Now we post to the same url with the new password btu another confirmation new password.
+        response = self.client.post(response['Location'], \
+            {'new_password1':self.new_password1, 'new_password2':'not_the_same_new_password'})
+        # Not valid, there same page is displayed.
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'food/account/password_reset_confirm.html')
 
     def test_password_reset_complete(self):
         """Display of the Password Reset Complete page that comes after sending the new password.
