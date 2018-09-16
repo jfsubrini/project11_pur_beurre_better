@@ -10,14 +10,15 @@
 	color: #D3D3D3;
 	text-align: center;
 	width: 130px;
+	height: 37px;
 }
 
 #category {
 	margin-top: 12px;
 	font-family: 'Open Sans', sans-serif;
 	font-weight: 700;
-	height: 32px;
-	font-size: 16px;
+	height: 38px;
+	font-size: 13px;
 	width: 130px;
 }
 
@@ -108,7 +109,7 @@
 
 /* Frame for reset done message to be displayed */
 .reset_done {
-	background-color: rgba(196, 85, 37, .85);
+	background-color: rgba(0, 0, 0, .75);
 	border: 2px solid #345A61;
 	-moz-border-radius: 5%;
     -webkit-border-radius: 5%;
